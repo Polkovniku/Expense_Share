@@ -14,10 +14,10 @@ class ExpenseResponse(BaseModel):
     created_at: datetime
     
 class ExpenseCreate(BaseModel):
-    group_id: UUID
     paid_by: UUID
     description: str = Field(min_length=5, max_length=250)
     amount: Decimal = Field(gt=0)
+    participant_ids: list[UUID] | None = None
 
 class ExpenseUpdate(BaseModel):
     description: str | None = Field(default=None, min_length=5, max_length=250)
