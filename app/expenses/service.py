@@ -83,3 +83,5 @@ class ExpenseService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense is not found")
         
         return (await self.db.scalars(select(ExpenseShare).where(ExpenseShare.expense_id == expense.id))).all()
+    
+    
