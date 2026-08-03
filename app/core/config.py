@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
-    
+    SECRET_KEY: str
     
     @property
     def database_url(self):

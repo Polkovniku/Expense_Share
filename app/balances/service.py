@@ -52,8 +52,9 @@ class BalanceService:
         for settlement in settlements:
             balances[settlement.to_member] += settlement.amount
             balances[settlement.from_member] -= settlement.amount
-        
-        return balances
+            
+        return {str(k): v for k, v in balances.items()}
+    
     
     
     async def simplify_debts(self, group_id: UUID, user: User):

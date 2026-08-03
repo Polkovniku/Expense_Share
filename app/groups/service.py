@@ -2,10 +2,12 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from app.expenses.models import Expense, ExpenseShare
 from app.groups.models import Group, GroupMember
 from app.groups.schemas import GroupCreate, GroupUpdate, GroupMemberCreate
+from app.settlements.models import Settlement
 from app.users.models import User
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 class GroupService:
     def __init__(self, db: AsyncSession):
@@ -13,7 +15,9 @@ class GroupService:
         
     async def get_group_by_id(self, group_id: UUID, user: User) -> Group | None:
         return await self.db.scalar(select(Group).where(Group.id == group_id, Group.created_by == user.id))
-        
+    
+    async def get_groups(self, user: User) -> list[Group]:
+        return (await self.db.scalars(select(Group).where(Group.created_by == user.id))).all()
     
     async def create_group(self, data: GroupCreate, user: User) -> Group:
         group = Group(created_by=user.id, **data.model_dump())
@@ -54,6 +58,16 @@ class GroupService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group is not found")
         
         try:
+            await self.db.execute(
+                delete(ExpenseShare).where(
+                    ExpenseShare.expense_id.in_(
+                        select(Expense.id).where(Expense.group_id == group_id)
+                    )
+                )
+            )
+            await self.db.execute(delete(Expense).where(Expense.group_id == group_id))
+            await self.db.execute(delete(Settlement).where(Settlement.group_id == group_id))
+            await self.db.execute(delete(GroupMember).where(GroupMember.group_id == group_id))
             await self.db.delete(group)
             await self.db.commit()
         except SQLAlchemyError:
