@@ -133,7 +133,7 @@ app/
 1. Клонувати репозиторій:
 ```bash
 git clone https://github.com/Polkovniku/Expense_Share.git
-cd expense-share
+cd Expense-Share
 ```
 
 2. Створити `.env` файл:
